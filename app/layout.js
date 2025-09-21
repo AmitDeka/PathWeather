@@ -1,3 +1,4 @@
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { Raleway, Merienda } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/global/navbar";
@@ -59,6 +60,7 @@ export default function RootLayout({ children }) {
           <Footer />
         </ThemeProvider>
       </body>
+      <GoogleAnalytics gaId="G-JCS9ESZPXP" />
     </html>
   );
 }
