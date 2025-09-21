@@ -267,7 +267,7 @@ export default function Map({ trip }) {
   }
 
   return (
-    <div className="lg:col-span-3 h-[600px]">
+    <div className="lg:col-span-3 h-[600px]" id="map-container">
       <div className="h-full w-full rounded-xl overflow-hidden shadow">
         {loading && (
           <div className="p-4 bg-secondary h-full flex items-center justify-center">

@@ -4,7 +4,7 @@ import InputCard from "@/components/input-card";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default function TripInput() {
+export default function TripInput({ setSubmittedTrip }) {
   const router = useRouter();
   const [trip, setTrip] = useState({
     from: "",
@@ -51,8 +51,19 @@ export default function TripInput() {
       if (stop) params.append("stops", stop);
     });
 
-    router.push(`?${params.toString()}`);
+    router.push(`?${params.toString()}`, { scroll: false });
   };
+
+  if (typeof window !== "undefined") {
+    const mapElement = document.getElementById("map-container");
+    if (mapElement) {
+      const isMobile = window.innerWidth < 1024;
+      window.scrollTo({
+        top: mapElement.offsetTop - (isMobile ? 70 : 80),
+        behavior: "smooth",
+      });
+    }
+  }
 
   return (
     <InputCard trip={trip} setTrip={setTrip} onFind={handleFindAndSyncURL} />
