@@ -21,6 +21,30 @@ export const metadata = {
   title: "PathWeather || Get Forecasts Along Your Driving Route",
   description:
     "Plan smarter road trips. Enter your start, end, and stops to get a weather forecast for every point along your journey. Avoid rain and snow with our driving weather map.",
+  openGraph: {
+    title: "PathWeather || Get Forecasts Along Your Driving Route",
+    description:
+      "Plan smarter road trips. Enter your start, end, and stops to get a weather forecast for every point along your journey.",
+    url: "https://path-weather.vercel.app/",
+    siteName: "PathWeather",
+    images: [
+      {
+        url: "/PathWeather.jpg",
+        width: 1200,
+        height: 630,
+        alt: "PathWeather Driving Forecast",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PathWeather || Get Forecasts Along Your Driving Route",
+    description:
+      "Plan smarter road trips. Enter your start, end, and stops to get a weather forecast for every point along your journey.",
+    images: ["/PathWeather.jpg"],
+  },
 };
 
 export default function RootLayout({ children }) {
