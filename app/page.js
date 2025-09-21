@@ -2,7 +2,7 @@
 
 import InputCard from "@/components/input-card";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 const Map = dynamic(() => import("@/components/map"), { ssr: false });
@@ -63,15 +63,17 @@ export default function Home() {
   const [submittedTrip, setSubmittedTrip] = useState(null);
 
   return (
-    <section className="min-h-screen font-sans px-4 py-6">
-      <div className="container mx-auto max-w-7xl grid gap-4 lg:grid-cols-5 xl:grid-cols-5">
-        <InputCard
-          trip={trip}
-          setTrip={setTrip}
-          onFind={handleFindAndSyncURL}
-        />
-        <Map trip={submittedTrip} />
-      </div>
-    </section>
+    <Suspense fallback={<div>Loading...</div>}>
+      <section className="min-h-screen font-sans px-4 py-6">
+        <div className="container mx-auto max-w-7xl grid gap-4 lg:grid-cols-5 xl:grid-cols-5">
+          <InputCard
+            trip={trip}
+            setTrip={setTrip}
+            onFind={handleFindAndSyncURL}
+          />
+          <Map trip={submittedTrip} />
+        </div>
+      </section>
+    </Suspense>
   );
 }
