@@ -15,15 +15,23 @@ import { LoaderCircleIcon } from "lucide-react";
 try {
   delete L.Icon.Default.prototype._getIconUrl;
   L.Icon.Default.mergeOptions({
-    iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
-    iconUrl: require("leaflet/dist/images/marker-icon.png"),
-    shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
+    iconRetinaUrl: new URL(
+      "leaflet/dist/images/marker-icon-2x.png",
+      import.meta.url
+    ).toString(),
+    iconUrl: new URL(
+      "leaflet/dist/images/marker-icon.png",
+      import.meta.url
+    ).toString(),
+    shadowUrl: new URL(
+      "leaflet/dist/images/marker-shadow.png",
+      import.meta.url
+    ).toString(),
   });
 } catch (err) {
   console.log(err);
 }
 
-// Haversine distance (km)
 function haversine([lat1, lon1], [lat2, lon2]) {
   const toRad = (v) => (v * Math.PI) / 180;
   const R = 6371;
@@ -35,20 +43,21 @@ function haversine([lat1, lon1], [lat2, lon2]) {
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
-// Nominatim geocoder
 async function geocode(place) {
   if (!place || !place.trim()) return null;
-  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(
-    place
-  )}`;
-  const res = await fetch(url, { headers: { "Accept-Language": "en" } });
-  if (!res.ok) return null;
+  const url = `/api/geocode?place=${encodeURIComponent(place)}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    console.error(`Geocoding failed for: ${place}`);
+    return null;
+  }
+
   const data = await res.json();
   if (!data || data.length === 0) return null;
+
   return { name: place, lat: Number(data[0].lat), lon: Number(data[0].lon) };
 }
 
-// Weather API (Open-Meteo)
 async function getForecastAt(lat, lon, targetTime) {
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&timezone=UTC`;
   const res = await fetch(url);
@@ -80,7 +89,6 @@ async function getForecastAt(lat, lon, targetTime) {
   };
 }
 
-// Get driving route from OSRM
 async function getRoute(coords) {
   if (coords.length < 2) return null;
   const coordStr = coords.map((c) => `${c.lon},${c.lat}`).join(";");
@@ -94,11 +102,10 @@ async function getRoute(coords) {
   return data.routes[0].geometry.coordinates.map(([lon, lat]) => [lat, lon]);
 }
 
-// Sample route every (speed / 2) km
 function sampleRouteByDistance(routeCoords, speedKmH) {
   if (!routeCoords || routeCoords.length < 2) return [];
 
-  const stepKm = speedKmH / 2; // interval in km
+  const stepKm = speedKmH / 2;
   const result = [routeCoords[0]];
   let last = routeCoords[0];
   let accumulated = 0;
@@ -115,7 +122,6 @@ function sampleRouteByDistance(routeCoords, speedKmH) {
     last = routeCoords[i];
   }
 
-  // Always include final point
   const lastPoint = routeCoords[routeCoords.length - 1];
   const [rlat, rlon] = result[result.length - 1];
   if (rlat !== lastPoint[0] || rlon !== lastPoint[1]) {
@@ -165,7 +171,6 @@ export default function Map({ trip }) {
       setRoute(null);
 
       try {
-        // ✅ Validate speed
         const speed = Number(trip.speed);
         if (!speed || speed <= 0) {
           throw new Error("⚠️ Speed must be greater than 0 km/h");
@@ -184,27 +189,31 @@ export default function Map({ trip }) {
         }
 
         let startTs = Date.now();
-        const fifteenDaysInMillis = 15 * 24 * 3600 * 1000;
-
-        if (startTs > startTs + fifteenDaysInMillis) {
-          throw new Error(
-            "⚠️ Cannot fetch weather more than 15 days in the future."
-          );
-        }
 
         if (trip.departure?.type === "scheduled") {
           if (trip.departure.date && trip.departure.time) {
             const iso = `${trip.departure.date}T${trip.departure.time}:00`;
             const d = new Date(iso);
-            if (!isNaN(d)) startTs = d.getTime();
+            if (!isNaN(d)) {
+              startTs = d.getTime();
+            } else {
+              throw new Error("⚠️ Invalid scheduled date or time.");
+            }
           }
         }
 
-        // Get driving route
+        const now = Date.now();
+        const fifteenDaysInMillis = 15 * 24 * 3600 * 1000;
+
+        if (startTs > now + fifteenDaysInMillis) {
+          throw new Error(
+            "⚠️ Cannot fetch weather more than 15 days in the future."
+          );
+        }
+
         const routeCoords = await getRoute(coords);
         if (!routeCoords) throw new Error("No route found");
 
-        // Sample by distance: every (speed / 2) km
         const sampled = sampleRouteByDistance(routeCoords, speed);
 
         const results = [];
@@ -249,7 +258,7 @@ export default function Map({ trip }) {
 
   if (!trip) {
     return (
-      <div className="md:col-span-2 lg:col-span-3 flex items-center justify-center h-[500px] bg-secondary rounded-xl overflow-hidden shadow">
+      <div className="lg:col-span-3 flex items-center justify-center h-[600px] bg-secondary rounded-xl overflow-hidden shadow">
         <p className="text-secondary-foreground">
           Enter a route and click Find Weather
         </p>
@@ -258,7 +267,7 @@ export default function Map({ trip }) {
   }
 
   return (
-    <div className="md:col-span-2 lg:col-span-3 h-[500px]">
+    <div className="lg:col-span-3 h-[600px]">
       <div className="h-full w-full rounded-xl overflow-hidden shadow">
         {loading && (
           <div className="p-4 bg-secondary h-full flex items-center justify-center">
@@ -284,32 +293,35 @@ export default function Map({ trip }) {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
 
-            {route && <Polyline positions={route} color="#5EA500" weight={4} />}
+            {route && <Polyline positions={route} color="#3ab57e" weight={4} />}
 
             {points.map((p, i) => (
               <Marker key={i} position={[p.lat, p.lon]}>
                 <Popup>
-                  <div style={{ minWidth: 180 }}>
-                    <strong>{p.name}</strong>
-                    <div style={{ fontSize: 12, color: "#666" }}>
-                      ETA: {new Date(p.eta).toLocaleString()}
-                    </div>
-                    <div style={{ marginTop: 6 }}>
-                      <strong>{p.weather ? `${p.weather.temp}°C` : "—"}</strong>
-                      <div style={{ fontSize: 13 }}>
+                  <div style={{ minWidth: 200 }}>
+                    <h3 className="text-lg font-bold text-primary font-sans leading-none">
+                      {p.name}
+                    </h3>
+                    <p className="text-sm leading-none text-muted-foreground font-medium">
+                      ETA:{" "}
+                      {new Date(p.eta).toLocaleString("en-GB", {
+                        hour12: true,
+                      })}
+                    </p>
+                    <div className="mt-4">
+                      <h4 className="text-sm font-bold mb-2 font-sans leading-none">
+                        Temperature: {p.weather ? `${p.weather.temp}°C` : "—"}
+                      </h4>
+                      <p className="text-base leading-0  text-primary font-semibold">
                         {p.weather
                           ? weatherText[p.weather.code] ||
                             `Code ${p.weather.code}`
                           : ""}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          color: "#666",
-                          marginTop: 6,
-                        }}>
-                        Forecast time (UTC): {p.weather?.time}
-                      </div>
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Forecast time:{" "}
+                        {new Date(p.weather?.time).toLocaleString("en-GB")}
+                      </p>
                     </div>
                   </div>
                 </Popup>

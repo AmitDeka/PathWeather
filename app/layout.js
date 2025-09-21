@@ -2,6 +2,8 @@ import { Raleway, Merienda } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/global/navbar";
 import { Footer } from "@/components/global/footer";
+import { Analytics } from "@vercel/analytics/next";
+import { ThemeProvider } from "./utils/theme-provider";
 
 const meriendaCursiv = Merienda({
   variable: "--font-merienda-cursiv",
@@ -25,11 +27,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${meriendaCursiv.variable} ${raleway.variable} antialiased`}
-        suppressHydrationWarning>
-        <Navbar />
-        {children}
-        <Footer />
+        className={`${meriendaCursiv.variable} ${raleway.variable} antialiased`}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <Navbar />
+          {children}
+          <Analytics />
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# PathWeather
+
+PathWeather is a Next.js-based web application that allows users to check the weather conditions along their travel routes. Users can plan trips, add stops, and schedule future trips with accurate weather forecasts.
+
+## Features
+
+- **Route Weather Check**: Enter start, destination, and optional stops to get weather details for the full trip.
+- **Live Weather Data**: Fetches real-time weather information for each point in the route.
+- **Schedule Trips**: Option to set a future date and time for the trip (up to 15 days from today). Past dates and times are disabled.
+- **Interactive Map**: Visual representation of your route using dynamic map components.
+- **Shareable URL**: Share trip details via URL so others can open and view the same route instantly.
+
+## Tech Stack
+
+- **Frontend**: Next.js, React, Tailwind CSS, shadcn/ui
+- **Maps**: Leaflet.js (React Leaflet)
+- **APIs**: OpenWeather API for weather data
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Make sure you have the following installed:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Node.js (>= 18)
+- npm or yarn
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### Installation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Clone the repository:
 
-## Learn More
+   ```bash
+   git clone https://github.com/your-username/pathweather.git
+   cd pathweather
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. Install dependencies:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. Create a `.env.local` file in the root directory and add your OpenWeather API key:
 
-## Deploy on Vercel
+   ```bash
+   NEXT_PUBLIC_WEATHER_API_KEY=your_api_key_here
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. Run the development server:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+   The app will be available at [http://localhost:3000](http://localhost:3000).
+
+## Future Enhancements
+
+- User authentication for saved trips
+- Push notifications for weather alerts on saved routes
+- Offline support with service workers
+- Dark mode support
+
+## License
+
+This project is licensed under the MIT License.

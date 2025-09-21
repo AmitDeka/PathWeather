@@ -27,7 +27,7 @@ export default function InputCard({ trip, setTrip, onFind }) {
   const routeInvalid = !trip.from?.trim() || !trip.to?.trim();
 
   return (
-    <div className="space-y-6 xl:col-span-2">
+    <div className="space-y-6 lg:col-span-2">
       <div className="space-y-2">
         <h1 className="text-2xl lg:text-3xl font-bold">Plan Smarter Trips</h1>
         <p className="lg:text-lg text-muted-foreground">
@@ -125,7 +125,7 @@ export default function InputCard({ trip, setTrip, onFind }) {
             </Button>
           </div>
 
-          {trip.departure.type === "scheduled" && (
+          {/* {trip.departure.type === "scheduled" && (
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Date</Label>
@@ -154,6 +154,81 @@ export default function InputCard({ trip, setTrip, onFind }) {
                 />
               </div>
             </div>
+          )} */}
+          {trip.departure.type === "scheduled" && (
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Date</Label>
+                <Input
+                  type="date"
+                  value={trip.departure.date}
+                  min={new Date().toISOString().split("T")[0]}
+                  max={
+                    new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
+                      .toISOString()
+                      .split("T")[0]
+                  }
+                  onChange={(e) => {
+                    const selectedDate = e.target.value;
+                    const today = new Date().toISOString().split("T")[0];
+                    const currentTime = new Date().toISOString().slice(11, 16);
+
+                    // if selecting today, also validate time
+                    let fixedTime = trip.departure.time;
+                    if (
+                      selectedDate === today &&
+                      fixedTime &&
+                      fixedTime < currentTime
+                    ) {
+                      fixedTime = ""; // reset invalid time
+                    }
+
+                    setTrip({
+                      ...trip,
+                      departure: {
+                        ...trip.departure,
+                        date: selectedDate,
+                        time: fixedTime,
+                      },
+                    });
+                  }}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Time</Label>
+                <Input
+                  type="time"
+                  value={trip.departure.time}
+                  min={
+                    trip.departure.date ===
+                    new Date().toISOString().split("T")[0]
+                      ? new Date().toISOString().slice(11, 16)
+                      : "00:00"
+                  }
+                  max="23:59"
+                  onChange={(e) => {
+                    const selectedTime = e.target.value;
+                    const today = new Date().toISOString().split("T")[0];
+                    const currentTime = new Date().toISOString().slice(11, 16);
+
+                    // if today, prevent selecting past times
+                    if (
+                      trip.departure.date === today &&
+                      selectedTime < currentTime
+                    ) {
+                      alert("You cannot select a past time for today");
+                      return;
+                    }
+
+                    setTrip({
+                      ...trip,
+                      departure: { ...trip.departure, time: selectedTime },
+                    });
+                  }}
+                />
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -171,8 +246,8 @@ export default function InputCard({ trip, setTrip, onFind }) {
               step="1"
               value={trip.speed ?? 60}
               onChange={(e) => {
-                const value =
-                  e.target.value === "" ? "" : parseFloat(e.target.value);
+                const raw = e.target.value;
+                const value = raw === "" ? null : parseFloat(raw);
                 setTrip({ ...trip, speed: value });
               }}
             />
