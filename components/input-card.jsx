@@ -26,6 +26,16 @@ export default function InputCard({ trip, setTrip, onFind }) {
   const speedInvalid = !Number.isFinite(speedNum) || speedNum <= 0;
   const routeInvalid = !trip.from?.trim() || !trip.to?.trim();
 
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const todayString = today.toLocaleDateString("en-CA");
+
+  const fifteenDaysFromNow = new Date();
+  fifteenDaysFromNow.setDate(today.getDate() + 15);
+  const maxDateString = fifteenDaysFromNow.toLocaleDateString("en-CA");
+
   return (
     <div className="space-y-6 lg:col-span-2">
       <div className="space-y-2">
@@ -125,62 +135,28 @@ export default function InputCard({ trip, setTrip, onFind }) {
             </Button>
           </div>
 
-          {/* {trip.departure.type === "scheduled" && (
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Date</Label>
-                <Input
-                  type="date"
-                  value={trip.departure.date}
-                  onChange={(e) =>
-                    setTrip({
-                      ...trip,
-                      departure: { ...trip.departure, date: e.target.value },
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Time</Label>
-                <Input
-                  type="time"
-                  value={trip.departure.time}
-                  onChange={(e) =>
-                    setTrip({
-                      ...trip,
-                      departure: { ...trip.departure, time: e.target.value },
-                    })
-                  }
-                />
-              </div>
-            </div>
-          )} */}
           {trip.departure.type === "scheduled" && (
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Date</Label>
+                <Label htmlFor="deptDate">Date</Label>
                 <Input
+                  id="deptDate"
                   type="date"
                   value={trip.departure.date}
-                  min={new Date().toISOString().split("T")[0]}
-                  max={
-                    new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
-                      .toISOString()
-                      .split("T")[0]
-                  }
+                  min={todayString}
+                  max={maxDateString}
                   onChange={(e) => {
                     const selectedDate = e.target.value;
                     const today = new Date().toISOString().split("T")[0];
                     const currentTime = new Date().toISOString().slice(11, 16);
 
-                    // if selecting today, also validate time
                     let fixedTime = trip.departure.time;
                     if (
                       selectedDate === today &&
                       fixedTime &&
                       fixedTime < currentTime
                     ) {
-                      fixedTime = ""; // reset invalid time
+                      fixedTime = "";
                     }
 
                     setTrip({
@@ -196,14 +172,17 @@ export default function InputCard({ trip, setTrip, onFind }) {
               </div>
 
               <div className="space-y-2">
-                <Label>Time</Label>
+                <Label htmlFor="deptTime">Time</Label>
                 <Input
+                  id="deptTime"
                   type="time"
                   value={trip.departure.time}
                   min={
-                    trip.departure.date ===
-                    new Date().toISOString().split("T")[0]
-                      ? new Date().toISOString().slice(11, 16)
+                    trip.departure.date === todayString
+                      ? new Date().toLocaleTimeString("en-GB", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
                       : "00:00"
                   }
                   max="23:59"
@@ -212,7 +191,6 @@ export default function InputCard({ trip, setTrip, onFind }) {
                     const today = new Date().toISOString().split("T")[0];
                     const currentTime = new Date().toISOString().slice(11, 16);
 
-                    // if today, prevent selecting past times
                     if (
                       trip.departure.date === today &&
                       selectedTime < currentTime
@@ -239,8 +217,9 @@ export default function InputCard({ trip, setTrip, onFind }) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Average Speed (km/h)</Label>
+            <Label htmlFor="speed">Average Speed (km/h)</Label>
             <Input
+              id="speed"
               type="number"
               min="1"
               step="1"

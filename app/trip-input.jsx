@@ -52,9 +52,7 @@ export default function TripInput({ setSubmittedTrip }) {
     });
 
     router.push(`?${params.toString()}`, { scroll: false });
-  };
 
-  if (typeof window !== "undefined") {
     const mapElement = document.getElementById("map-container");
     if (mapElement) {
       const isMobile = window.innerWidth < 1024;
@@ -63,7 +61,7 @@ export default function TripInput({ setSubmittedTrip }) {
         behavior: "smooth",
       });
     }
-  }
+  };
 
   return (
     <InputCard trip={trip} setTrip={setTrip} onFind={handleFindAndSyncURL} />
