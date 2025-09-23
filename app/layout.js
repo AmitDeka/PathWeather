@@ -3,7 +3,7 @@ import { Raleway, Merienda } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/global/navbar";
 import { Footer } from "@/components/global/footer";
-import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "./utils/theme-provider";
 
 const meriendaCursiv = Merienda({
@@ -56,7 +56,7 @@ export default function RootLayout({ children }) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Navbar />
           {children}
-          <Analytics />
+          <SpeedInsights />
           <Footer />
         </ThemeProvider>
       </body>
