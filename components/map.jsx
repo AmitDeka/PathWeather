@@ -105,7 +105,13 @@ async function getRoute(coords) {
 function sampleRouteByDistance(routeCoords, speedKmH) {
   if (!routeCoords || routeCoords.length < 2) return [];
 
-  const stepKm = speedKmH / 2;
+  const distanceStepKm = 10;
+  const timeStepMin = 15;
+
+  const distancePerTimeStep = (speedKmH * timeStepMin) / 60;
+
+  const stepKm = Math.min(distanceStepKm, distancePerTimeStep);
+
   const result = [routeCoords[0]];
   let last = routeCoords[0];
   let accumulated = 0;
@@ -127,6 +133,28 @@ function sampleRouteByDistance(routeCoords, speedKmH) {
   if (rlat !== lastPoint[0] || rlon !== lastPoint[1]) {
     result.push(lastPoint);
   }
+
+  //  Show points at avg. speed by 2
+  // const stepKm = speedKmH / 2;
+  // const result = [routeCoords[0]];
+  // let last = routeCoords[0];
+  // let accumulated = 0;
+  // for (let i = 1; i < routeCoords.length; i++) {
+  //   const d = haversine(last, routeCoords[i]);
+  //   accumulated += d;
+
+  //   if (accumulated >= stepKm) {
+  //     result.push(routeCoords[i]);
+  //     accumulated = 0;
+  //   }
+
+  //   last = routeCoords[i];
+  // }
+  // const lastPoint = routeCoords[routeCoords.length - 1];
+  // const [rlat, rlon] = result[result.length - 1];
+  // if (rlat !== lastPoint[0] || rlon !== lastPoint[1]) {
+  //   result.push(lastPoint);
+  // }
 
   return result;
 }
@@ -176,16 +204,22 @@ export default function Map({ trip }) {
           throw new Error("⚠️ Speed must be greater than 0 km/h");
         }
 
-        const places = [trip.from, ...(trip.stops || []), trip.to].filter(
-          Boolean
-        );
+        const allPlaceNames = [trip.from, ...(trip.stops || []), trip.to].filter(Boolean);
+        const allCoords = [trip.fromCoord, ...(trip.stopCoords || []), trip.toCoord];
 
         const coords = [];
-        for (const p of places) {
-          const g = await geocode(p);
-          if (!g) throw new Error(`Could not find location: ${p}`);
-          coords.push(g);
-          await new Promise((r) => setTimeout(r, 1000));
+        for (let i = 0; i < allPlaceNames.length; i++) {
+          const preResolved = allCoords[i];
+          if (preResolved && typeof preResolved.lat === "number") {
+            // Already resolved via autocomplete — use directly, no API call needed
+            coords.push({ name: allPlaceNames[i], lat: preResolved.lat, lon: preResolved.lon });
+          } else {
+            // Fall back to geocode API (e.g. URL-loaded trip without autocomplete selection)
+            const g = await geocode(allPlaceNames[i]);
+            if (!g) throw new Error(`Could not find location: ${allPlaceNames[i]}`);
+            coords.push(g);
+            await new Promise((r) => setTimeout(r, 1000));
+          }
         }
 
         let startTs = Date.now();
@@ -216,8 +250,28 @@ export default function Map({ trip }) {
 
         const sampled = sampleRouteByDistance(routeCoords, speed);
 
+        // Build a label lookup: for each sampled point find if it's near a key waypoint
+        const lastIdx = sampled.length - 1;
+
+        // Helper: short display name (first segment before the first comma)
+        const shortName = (full) => full?.split(",")[0]?.trim() || full;
+
+        // Pre-compute the closest sampled index for each coord waypoint (stop detection)
+        const waypointLabels = {};
+        coords.forEach((c, wi) => {
+          let best = 0;
+          let bestDist = Infinity;
+          for (let si = 0; si < sampled.length; si++) {
+            const d = haversine(sampled[si], [c.lat, c.lon]);
+            if (d < bestDist) { bestDist = d; best = si; }
+          }
+          // Only mark as a stop if it's actually close (within 5 km)
+          if (bestDist < 5) waypointLabels[best] = wi;
+        });
+
         const results = [];
         let currentTs = startTs;
+        let intermediateCount = 0;
         for (let i = 0; i < sampled.length; i++) {
           if (i > 0) {
             const distKm = haversine(sampled[i - 1], sampled[i]);
@@ -227,8 +281,30 @@ export default function Map({ trip }) {
 
           const [lat, lon] = sampled[i];
           const weather = await getForecastAt(lat, lon, currentTs);
+
+          // Determine label
+          let name;
+          if (i === 0) {
+            name = `📍 ${shortName(trip.from)}`;
+          } else if (i === lastIdx) {
+            name = `🏁 ${shortName(trip.to)}`;
+          } else if (waypointLabels[i] !== undefined) {
+            const wi = waypointLabels[i];
+            const isStop = wi > 0 && wi < coords.length - 1;
+            if (isStop) {
+              const stopNum = wi; // stop index (1-based among stops)
+              name = `🛑 Stop ${stopNum} — ${shortName(coords[wi].name)}`;
+            } else {
+              intermediateCount++;
+              name = `Point ${intermediateCount}`;
+            }
+          } else {
+            intermediateCount++;
+            name = `Point ${intermediateCount}`;
+          }
+
           results.push({
-            name: `Point ${i + 1}`,
+            name,
             lat,
             lon,
             eta: new Date(currentTs).toISOString(),

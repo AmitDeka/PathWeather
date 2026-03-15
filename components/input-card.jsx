@@ -3,12 +3,12 @@
 import { Clock, MapPin, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
-import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import LocationInput from "./location-input";
 
 export default function InputCard({ trip, setTrip, onFind }) {
   const addStop = () =>
-    setTrip({ ...trip, stops: [...(trip.stops || []), ""] });
+    setTrip({ ...trip, stops: [...(trip.stops || []), ""], stopCoords: [...(trip.stopCoords || []), null] });
 
   const updateStop = (i, value) => {
     const s = [...(trip.stops || [])];
@@ -16,22 +16,24 @@ export default function InputCard({ trip, setTrip, onFind }) {
     setTrip({ ...trip, stops: s });
   };
 
-  const removeStop = (i) =>
-    setTrip({
-      ...trip,
-      stops: (trip.stops || []).filter((_, idx) => idx !== i),
-    });
+  const updateStopCoord = (i, coord) => {
+    const sc = [...(trip.stopCoords || [])];
+    sc[i] = coord;
+    setTrip({ ...trip, stopCoords: sc });
+  };
+
+  const removeStop = (i) => {
+    const stops = (trip.stops || []).filter((_, idx) => idx !== i);
+    const stopCoords = (trip.stopCoords || []).filter((_, idx) => idx !== i);
+    setTrip({ ...trip, stops, stopCoords });
+  };
 
   const speedNum = Number(trip.speed);
   const speedInvalid = !Number.isFinite(speedNum) || speedNum <= 0;
   const routeInvalid = !trip.from?.trim() || !trip.to?.trim();
 
   const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
   const todayString = today.toLocaleDateString("en-CA");
-
   const fifteenDaysFromNow = new Date();
   fifteenDaysFromNow.setDate(today.getDate() + 15);
   const maxDateString = fifteenDaysFromNow.toLocaleDateString("en-CA");
@@ -55,11 +57,12 @@ export default function InputCard({ trip, setTrip, onFind }) {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="from">From</Label>
-            <Input
+            <LocationInput
               id="from"
               value={trip.from}
-              onChange={(e) => setTrip({ ...trip, from: e.target.value })}
               placeholder="Enter departure location"
+              onChange={(text) => setTrip((prev) => ({ ...prev, from: text, fromCoord: null }))}
+              onSelect={(coord) => setTrip((prev) => ({ ...prev, fromCoord: coord }))}
             />
           </div>
 
@@ -75,10 +78,23 @@ export default function InputCard({ trip, setTrip, onFind }) {
                   Remove
                 </Button>
               </div>
-              <Input
+              <LocationInput
                 value={stop}
-                onChange={(e) => updateStop(i, e.target.value)}
                 placeholder="Enter stop location"
+                onChange={(text) =>
+                  setTrip((prev) => {
+                    const s = [...(prev.stops || [])];
+                    s[i] = text;
+                    return { ...prev, stops: s };
+                  })
+                }
+                onSelect={(coord) =>
+                  setTrip((prev) => {
+                    const sc = [...(prev.stopCoords || [])];
+                    sc[i] = coord;
+                    return { ...prev, stopCoords: sc };
+                  })
+                }
               />
             </div>
           ))}
@@ -89,11 +105,12 @@ export default function InputCard({ trip, setTrip, onFind }) {
 
           <div className="space-y-2">
             <Label htmlFor="to">To</Label>
-            <Input
+            <LocationInput
               id="to"
               value={trip.to}
-              onChange={(e) => setTrip({ ...trip, to: e.target.value })}
               placeholder="Enter destination"
+              onChange={(text) => setTrip((prev) => ({ ...prev, to: text, toCoord: null }))}
+              onSelect={(coord) => setTrip((prev) => ({ ...prev, toCoord: coord }))}
             />
           </div>
         </CardContent>
@@ -139,12 +156,13 @@ export default function InputCard({ trip, setTrip, onFind }) {
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="deptDate">Date</Label>
-                <Input
+                <input
                   id="deptDate"
                   type="date"
                   value={trip.departure.date}
                   min={todayString}
                   max={maxDateString}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   onChange={(e) => {
                     const selectedDate = e.target.value;
                     const today = new Date().toISOString().split("T")[0];
@@ -173,7 +191,7 @@ export default function InputCard({ trip, setTrip, onFind }) {
 
               <div className="space-y-2">
                 <Label htmlFor="deptTime">Time</Label>
-                <Input
+                <input
                   id="deptTime"
                   type="time"
                   value={trip.departure.time}
@@ -186,6 +204,7 @@ export default function InputCard({ trip, setTrip, onFind }) {
                       : "00:00"
                   }
                   max="23:59"
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   onChange={(e) => {
                     const selectedTime = e.target.value;
                     const today = new Date().toISOString().split("T")[0];
@@ -218,12 +237,13 @@ export default function InputCard({ trip, setTrip, onFind }) {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="speed">Average Speed (km/h)</Label>
-            <Input
+            <input
               id="speed"
               type="number"
               min="1"
               step="1"
               value={trip.speed ?? 60}
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               onChange={(e) => {
                 const raw = e.target.value;
                 const value = raw === "" ? null : parseFloat(raw);

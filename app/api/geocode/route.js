@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const place = searchParams.get("place");
+  const limitParam = parseInt(searchParams.get("limit") ?? "1", 10);
+  const limit = Math.min(Math.max(limitParam, 1), 5);
 
   if (!place) {
     return NextResponse.json(
@@ -11,7 +13,7 @@ export async function GET(request) {
     );
   }
 
-  const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(
+  const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&limit=${limit}&q=${encodeURIComponent(
     place
   )}`;
 

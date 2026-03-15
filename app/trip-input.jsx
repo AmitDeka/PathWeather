@@ -10,6 +10,9 @@ export default function TripInput({ setSubmittedTrip }) {
     from: "",
     to: "",
     stops: [],
+    stopCoords: [],
+    fromCoord: null,
+    toCoord: null,
     departure: { type: "now", date: "", time: "" },
     speed: 60,
   });
@@ -30,6 +33,9 @@ export default function TripInput({ setSubmittedTrip }) {
       from,
       to,
       stops,
+      stopCoords: stops.map(() => null),
+      fromCoord: null,
+      toCoord: null,
       speed,
       departure: { type: departureType, date, time },
     });

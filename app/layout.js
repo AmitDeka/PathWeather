@@ -1,4 +1,5 @@
 import { GoogleAnalytics } from "@next/third-parties/google";
+import Script from "next/script";
 import { Raleway, Merienda } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/global/navbar";
@@ -26,11 +27,11 @@ export const metadata = {
     title: "PathWeather || Get Forecasts Along Your Driving Route",
     description:
       "Plan smarter road trips. Enter your start, end, and stops to get a weather forecast for every point along your journey.",
-    url: "https://path-weather.vercel.app/",
+    url: "https://path-weather.vercel.app",
     siteName: "PathWeather",
     images: [
       {
-        url: "/PathWeather.jpg",
+        url: "https://path-weather.vercel.app/PathWeather.jpg",
         width: 1200,
         height: 630,
         alt: "PathWeather Driving Forecast",
@@ -44,7 +45,7 @@ export const metadata = {
     title: "PathWeather || Get Forecasts Along Your Driving Route",
     description:
       "Plan smarter road trips. Enter your start, end, and stops to get a weather forecast for every point along your journey.",
-    images: ["/PathWeather.jpg"],
+    images: ["https://path-weather.vercel.app/PathWeather.jpg"],
   },
 };
 
@@ -61,6 +62,12 @@ export default function RootLayout({ children }) {
         </ThemeProvider>
       </body>
       <GoogleAnalytics gaId="G-JCS9ESZPXP" />
+      <Script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1410161371665210"
+        crossOrigin="anonymous"
+        strategy="afterInteractive"
+      />
     </html>
   );
 }
