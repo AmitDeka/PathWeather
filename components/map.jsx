@@ -223,30 +223,44 @@ const weatherEmoji = {
 
 function createWeatherIcon(code, tempC) {
   const emoji = weatherEmoji[code] ?? "🌡️";
-  const temp  = tempC != null ? `${Math.round(tempC)}°C` : "";
+  const temp  = tempC != null ? `${Math.round(tempC)}°` : "";
   const html = `
-    <div style="
-      display:flex;flex-direction:column;align-items:center;
-      background:white;border-radius:12px;
-      padding:4px 7px;box-shadow:0 2px 6px rgba(0,0,0,0.25);
-      border:1.5px solid #e2e8f0;white-space:nowrap;
-      font-family:sans-serif;line-height:1;
+    <div class="weather-marker-container" style="
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
     ">
-      <span style="font-size:20px;line-height:1.2">${emoji}</span>
-      <span style="font-size:10px;font-weight:600;color:#334155;margin-top:2px">${temp}</span>
-    </div>
-    <div style="
-      width:0;height:0;margin:0 auto;
-      border-left:6px solid transparent;
-      border-right:6px solid transparent;
-      border-top:7px solid #e2e8f0;
-    "></div>`;
+      <div style="
+        background: white;
+        border-radius: 50px;
+        padding: 4px 10px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        border: 2px solid #3ab57e;
+        white-space: nowrap;
+        font-family: system-ui, -apple-system, sans-serif;
+      ">
+        <span style="font-size: 22px; line-height: 1;">${emoji}</span>
+        <span style="font-size: 14px; font-weight: 700; color: #1a202c;">${temp}</span>
+      </div>
+      <div style="
+        width: 0;
+        height: 0;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-top: 8px solid #3ab57e;
+        margin-top: -1px;
+      "></div>
+    </div>`;
+
   return L.divIcon({
     html,
-    className: "",
-    iconSize: [52, 54],
-    iconAnchor: [26, 54],
-    popupAnchor: [0, -56],
+    className: "custom-weather-icon",
+    iconSize: [60, 45],
+    iconAnchor: [30, 45],
+    popupAnchor: [0, -45],
   });
 }
 

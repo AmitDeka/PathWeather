@@ -6,6 +6,7 @@ import { Navbar } from "@/components/global/navbar";
 import { Footer } from "@/components/global/footer";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "./utils/theme-provider";
+import CookieConsent from "@/components/cookie-consent";
 
 const meriendaCursiv = Merienda({
   variable: "--font-merienda-cursiv",
@@ -20,11 +21,12 @@ const raleway = Raleway({
 });
 
 export const metadata = {
-  title: "PathWeather || Get Forecasts Along Your Driving Route",
+  title: "PathWeather | Weather Forecasts Along Your Driving Route",
   description:
-    "Plan smarter road trips. Enter your start, end, and stops to get a weather forecast for every point along your journey. Avoid rain and snow with our driving weather map.",
+    "Plan smarter road trips. Get weather forecasts for every point along your journey. Avoid rain, snow, and storms with our interactive driving weather map.",
+  keywords: "driving weather, road trip planner, route weather, weather along path, trip weather forecast, PathWeather",
   openGraph: {
-    title: "PathWeather || Get Forecasts Along Your Driving Route",
+    title: "PathWeather | Weather Forecasts Along Your Driving Route",
     description:
       "Plan smarter road trips. Enter your start, end, and stops to get a weather forecast for every point along your journey.",
     url: "https://path-weather.vercel.app",
@@ -42,7 +44,7 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "PathWeather || Get Forecasts Along Your Driving Route",
+    title: "PathWeather | Weather Forecasts Along Your Driving Route",
     description:
       "Plan smarter road trips. Enter your start, end, and stops to get a weather forecast for every point along your journey.",
     images: ["https://path-weather.vercel.app/PathWeather.jpg"],
@@ -57,6 +59,7 @@ export default function RootLayout({ children }) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Navbar />
           {children}
+          <CookieConsent />
           <SpeedInsights />
           <Footer />
         </ThemeProvider>
