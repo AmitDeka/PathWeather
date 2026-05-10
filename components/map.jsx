@@ -160,23 +160,95 @@ function sampleRouteByDistance(routeCoords, speedKmH) {
 }
 
 const weatherText = {
-  0: "Clear",
-  1: "Mainly clear",
-  2: "Partly cloudy",
-  3: "Cloudy",
+  0:  "Clear",
+  1:  "Mainly clear",
+  2:  "Partly cloudy",
+  3:  "Cloudy",
   45: "Fog",
   48: "Rime fog",
   51: "Light drizzle",
   53: "Moderate drizzle",
   55: "Dense drizzle",
+  56: "Light freezing drizzle",
+  57: "Dense freezing drizzle",
   61: "Slight rain",
   63: "Moderate rain",
   65: "Heavy rain",
+  66: "Light freezing rain",
+  67: "Heavy freezing rain",
   71: "Slight snow",
   73: "Moderate snow",
   75: "Heavy snow",
+  77: "Snow grains",
+  80: "Slight rain showers",
+  81: "Moderate rain showers",
+  82: "Violent rain showers",
+  85: "Slight snow showers",
+  86: "Heavy snow showers",
   95: "Thunderstorm",
+  96: "Thunderstorm with slight hail",
+  99: "Thunderstorm with heavy hail",
 };
+
+const weatherEmoji = {
+  0:  "☀️",
+  1:  "🌤️",
+  2:  "⛅",
+  3:  "☁️",
+  45: "🌫️",
+  48: "🌫️",
+  51: "🌦️",
+  53: "🌦️",
+  55: "🌦️",
+  56: "🌨️",
+  57: "🌨️",
+  61: "🌧️",
+  63: "🌧️",
+  65: "🌧️",
+  66: "🌧️",
+  67: "🌧️",
+  71: "❄️",
+  73: "❄️",
+  75: "❄️",
+  77: "🌨️",
+  80: "🌧️",
+  81: "🌧️",
+  82: "🌧️",
+  85: "🌨️",
+  86: "🌨️",
+  95: "⛈️",
+  96: "⛈️",
+  99: "⛈️",
+};
+
+function createWeatherIcon(code, tempC) {
+  const emoji = weatherEmoji[code] ?? "🌡️";
+  const temp  = tempC != null ? `${Math.round(tempC)}°C` : "";
+  const html = `
+    <div style="
+      display:flex;flex-direction:column;align-items:center;
+      background:white;border-radius:12px;
+      padding:4px 7px;box-shadow:0 2px 6px rgba(0,0,0,0.25);
+      border:1.5px solid #e2e8f0;white-space:nowrap;
+      font-family:sans-serif;line-height:1;
+    ">
+      <span style="font-size:20px;line-height:1.2">${emoji}</span>
+      <span style="font-size:10px;font-weight:600;color:#334155;margin-top:2px">${temp}</span>
+    </div>
+    <div style="
+      width:0;height:0;margin:0 auto;
+      border-left:6px solid transparent;
+      border-right:6px solid transparent;
+      border-top:7px solid #e2e8f0;
+    "></div>`;
+  return L.divIcon({
+    html,
+    className: "",
+    iconSize: [52, 54],
+    iconAnchor: [26, 54],
+    popupAnchor: [0, -56],
+  });
+}
 
 export default function Map({ trip }) {
   const [points, setPoints] = useState([]);
@@ -372,7 +444,11 @@ export default function Map({ trip }) {
             {route && <Polyline positions={route} color="#3ab57e" weight={4} />}
 
             {points.map((p, i) => (
-              <Marker key={i} position={[p.lat, p.lon]}>
+              <Marker
+                key={i}
+                position={[p.lat, p.lon]}
+                icon={createWeatherIcon(p.weather?.code, p.weather?.temp)}
+              >
                 <Popup>
                   <div style={{ minWidth: 200 }}>
                     <h3 className="text-lg font-bold text-primary font-sans leading-none">

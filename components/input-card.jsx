@@ -165,8 +165,11 @@ export default function InputCard({ trip, setTrip, onFind }) {
                   className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   onChange={(e) => {
                     const selectedDate = e.target.value;
-                    const today = new Date().toISOString().split("T")[0];
-                    const currentTime = new Date().toISOString().slice(11, 16);
+                    const today = new Date().toLocaleDateString("en-CA");         // local date
+                    const currentTime = new Date().toLocaleTimeString("en-GB", { // local time
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    });
 
                     let fixedTime = trip.departure.time;
                     if (
@@ -207,8 +210,11 @@ export default function InputCard({ trip, setTrip, onFind }) {
                   className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   onChange={(e) => {
                     const selectedTime = e.target.value;
-                    const today = new Date().toISOString().split("T")[0];
-                    const currentTime = new Date().toISOString().slice(11, 16);
+                    const today = new Date().toLocaleDateString("en-CA");         // local date
+                    const currentTime = new Date().toLocaleTimeString("en-GB", { // local time
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    });
 
                     if (
                       trip.departure.date === today &&
