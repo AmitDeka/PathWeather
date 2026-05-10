@@ -38,7 +38,7 @@ export default function ContactUs() {
               href="https://github.com/AmitDeka/PathWeather"
               target="_blank"
               className="flex items-center p-6 rounded-xl border border-border bg-card hover:bg-accent transition-colors group">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mr-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                 <Github className="h-6 w-6" />
               </div>
               <div>
